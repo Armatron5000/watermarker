@@ -2,10 +2,13 @@
 
 ## State of the repo
 
-Pre-implementation. The only artifact is `PLAN.md` — the binding tech spec for the app. No code, `package.json`, or dev tooling exists yet.
+Milestones 1 (spike) and 2 (scaffold) are complete. `PLAN.md` remains the binding contract; read it before building anything.
 
-- Read `PLAN.md` before proposing or building anything; treat it as the contract.
-- Electron (TypeScript proposed), shore-based architecture described in PLAN.md §3; targets Windows, macOS, Linux.
+- Electron 44 + TypeScript + Vite (`electron-vite`), secure 3-tier split: `src/main` (dialogs, font-list, all sharp work) ↔ `src/preload` (typed bridge) ↔ `src/renderer` (UI). `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`. Targets Windows, macOS, Linux.
+- The typed IPC contract lives in `src/shared/ipc.ts` (`IpcChannelMap` maps each whitelisted channel to `request`/`response`; `IpcBridge` is the renderer-facing surface). Exactly the five channels from PLAN §3.5: `list-fonts`, `open-image`, `save-image`, `get-frame-count`, `render-text-layer`. Only `list-fonts` is implemented (real `font-list` enumeration, verified end-to-end); the other four handlers throw `not implemented` (milestone 3).
+- Commands: `npm run dev` (HMR dev), `npm run build` (typecheck + electron-vite build into `out/`), `npm run start` (preview the built app), `npm run typecheck`, `npm run spike`.
+- Build gotcha: sandboxed preloads are CJS-only, so package.json deliberately has **no** `"type": "module"` (electron-vite would otherwise emit a `.mjs` preload that cannot load sandboxed). The config file is `electron.vite.config.mts` so it still loads as ESM.
+- CSP is set via meta tag in `src/renderer/index.html` (dev HMR needs the `ws://localhost:*` connect-src allowance).
 
 ## Non-negotiable spec constraints (easy to violate)
 
@@ -29,6 +32,8 @@ Spike done and passing (`npm run spike`, evergreen script at `spike/spike.mjs`).
 - Animated GIF (3 frames) and multi-frame TIFF preview/save flow: `metadata().pages > 1` detects multi-frame; reading with `{ page: 0 }` flattens to a single-frame output of the same format.
 - EXIF: `metadata().orientation` reports the tag; `.rotate()` bytes equal `.autoOrient()` (what the browser preview shows); stale orientation tag stripped on save.
 - `font-list` works: 170 families enumerated on the dev OS.
+
+Scaffold verified (`npm run typecheck`, `npm run build`, live launch against the dev OS display): the built and dev apps both boot; renderer exposes `window.api` with exactly the 5 bridge methods; `listFonts()` resolves 170 families from main; `nodeIntegration` false; sandboxed renderer (`--enable-sandbox`). CSP warning cleared with the index.html meta tag.
 
 ## Spike learnings (API gotchas that cost time)
 

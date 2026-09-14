@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws://localhost:* wss://localhost:*"
+    />
+    <title>Watermarker</title>
+    <link rel="stylesheet" href="./src/assets/main.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Watermarker</h1>
+        <span id="bridge-status" class="status status-pending">connecting…</span>
+      </header>
+      <main>
+        <p class="lead">Scaffold milestone: secure renderer/preload/main split with a typed IPC bridge is live.</p>
+        <div class="card">
+          <label for="font-select">Fonts (enumerated in main via font-list, over IPC)</label>
+          <select id="font-select" disabled></select>
+          <p id="ipc-note" class="note"></p>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -1,4 +1,5 @@
 node_modules/
 spike/out/
+out/
 dist/
 release/

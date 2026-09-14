@@ -2,14 +2,26 @@
   "name": "watermarker",
   "version": "0.0.0",
   "private": true,
-  "description": "Cross-platform image watermarking desktop app (Electron). Pre-implementation; see PLAN.md.",
-  "type": "module",
+  "description": "Cross-platform image watermarking desktop app (Electron). See PLAN.md.",
+  "main": "./out/main/index.js",
   "scripts": {
-    "spike": "node spike/spike.mjs"
+    "spike": "node spike/spike.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json --composite false && tsc --noEmit -p tsconfig.web.json --composite false",
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "start": "electron-vite preview"
   },
   "license": "UNLICENSED",
   "dependencies": {
     "font-list": "2.1.0",
     "sharp": "0.35.4"
+  },
+  "devDependencies": {
+    "@swc/core": "1.16.2",
+    "@types/node": "22.20.2",
+    "electron": "44.3.0",
+    "electron-vite": "5.0.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.6"
   }
 }

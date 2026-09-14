@@ -1,0 +1,85 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #1e1f24;
+  color: #e8e8ea;
+}
+
+#app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.lead {
+  color: #b8b8bd;
+}
+
+.card {
+  background: #2a2b31;
+  border: 1px solid #3a3b42;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: #b8b8bd;
+  margin-bottom: 8px;
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #3a3b42;
+  background: #1e1f24;
+  color: inherit;
+}
+
+.note {
+  font-size: 12px;
+  color: #8f8f96;
+}
+
+.status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.status-pending {
+  background: #3a3b42;
+  color: #c8c8cd;
+}
+
+.status-ok {
+  background: #1d4d2b;
+  color: #7ce3a0;
+}
+
+.status-error {
+  background: #5a1f1f;
+  color: #ff9d9d;
+}
