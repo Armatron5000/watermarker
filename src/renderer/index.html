@@ -17,11 +17,25 @@
         <span id="bridge-status" class="status status-pending">connecting…</span>
       </header>
       <main>
-        <p class="lead">Scaffold milestone: secure renderer/preload/main split with a typed IPC bridge is live.</p>
         <div class="card">
-          <label for="font-select">Fonts (enumerated in main via font-list, over IPC)</label>
+          <div class="toolbar">
+            <button id="btn-open" disabled>Open Image…</button>
+            <button id="btn-save" disabled>Save</button>
+          </div>
+          <div id="multi-frame-warning" class="warning" hidden>
+            This file has <span id="frame-count">0</span> frames. The watermark will be applied to the
+            first frame only; the result will not be animated.
+          </div>
+          <div id="image-info" class="info" hidden>
+            <span id="info-name"></span> — <span id="info-dims"></span>, <span id="info-format"></span>
+          </div>
+          <div id="preview-area" class="preview-area">
+            <canvas id="preview-canvas"></canvas>
+            <p id="empty-hint" class="empty-hint">Open an image to begin.</p>
+          </div>
+          <label for="font-select">Font</label>
           <select id="font-select" disabled></select>
-          <p id="ipc-note" class="note"></p>
+          <p id="status-msg" class="note"></p>
         </div>
       </main>
     </div>

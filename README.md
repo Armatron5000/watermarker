@@ -74,8 +74,9 @@ electron.vite.config.mts  Build configuration
 ## Status
 
 - Milestone 1 (spike) — done
-- Milestone 2 (scaffold) — done: secure split, typed IPC bridge, `list-fonts` live end-to-end; remaining channels stubbed
-- Milestones 3–7 — pending: core pipeline, editor, fonts & dialogs, polish, packaging
+- Milestone 2 (scaffold) — done: secure split, typed IPC bridge, `list-fonts` live end-to-end
+- Milestone 3 (core pipeline) — done: `open-image`, `get-frame-count`, `render-text-layer`, `save-image` IPC handlers implemented with sharp; native open/save dialogs; full-res composite encodes in the source format (JPEG 90%); multi-frame warning flow; preview rendered in the app
+- Milestones 4–7 — pending: editor (move/resize/rotate/multi-row text layer), fonts & dialogs polish, drag-and-drop + error states, packaging
 
 ## Out of scope (v1)
 
