@@ -7,6 +7,14 @@ export interface TextLayerData {
   height: number
 }
 
+export function cssFontFamily(name: string): string {
+  return /\s/.test(name) ? `"${name}"` : name
+}
+
+export function cleanFontName(font: string): string {
+  return font.length > 1 && font.startsWith('"') && font.endsWith('"') ? font.slice(1, -1) : font
+}
+
 export class Editor {
   private previewArea: HTMLElement
   private stage!: HTMLDivElement
@@ -24,6 +32,7 @@ export class Editor {
 
   text = ''
   font = 'sans-serif'
+  fontWeight = 700
   fontSize = 32
   opacity = 0.5
   textX = 0
@@ -95,6 +104,12 @@ export class Editor {
     this.onTextLayerChange?.()
   }
 
+  changeFontWeight(weight: string): void {
+    this.fontWeight = Number(weight) || 700
+    this.syncTextBox()
+    this.onTextLayerChange?.()
+  }
+
   changeFontSize(size: number): void {
     this.fontSize = size
     this.syncTextBox()
@@ -130,7 +145,7 @@ export class Editor {
     }
 
     const fs = this.fontSize / this.scale
-    ctx.font = `bold ${fs}px ${this.font}`
+    ctx.font = `${this.fontWeight} ${fs}px ${cssFontFamily(this.font)}`
     const lines = this.wrapText(this.text, this.textW / this.scale, ctx)
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
@@ -378,7 +393,7 @@ export class Editor {
     this.textBox.style.top = `${this.textY}px`
     this.textBox.style.maxWidth = `${this.textW}px`
     this.textBox.style.transform = `rotate(${this.rotation}deg)`
-    this.textBox.style.font = `bold ${this.fontSize}px ${this.font}`
+    this.textBox.style.font = `${this.fontWeight} ${this.fontSize}px ${cssFontFamily(this.font)}`
     this.textBox.style.opacity = String(this.opacity)
 
     if (this.textBox.matches(':focus')) return

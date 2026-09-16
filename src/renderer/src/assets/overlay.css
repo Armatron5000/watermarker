@@ -46,7 +46,6 @@
   pointer-events: auto;
   user-select: none;
   -webkit-user-select: none;
-  font-weight: bold;
   line-height: 1.2;
   transform-origin: top left;
 }

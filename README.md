@@ -78,7 +78,8 @@ electron.vite.config.mts  Build configuration
 - Milestone 2 (scaffold) — done: secure split, typed IPC bridge, `list-fonts` live end-to-end
 - Milestone 3 (core pipeline) — done: `open-image`, `get-frame-count`, `render-text-layer`, `save-image` IPC handlers implemented with sharp; native open/save dialogs; full-res composite encodes in the source format (JPEG 90%); multi-frame warning flow; preview rendered in the app
 - Milestone 4 (interactive editor) — done: move (drag), rotate (Shift snaps to 15°), resize (4 corner handles scale font + wrap width), click-to-edit multi-row text, live preview; validation (non-blank, ≤100 Unicode code points, whitespace-only rejection); full-res text layer rendered on an offscreen canvas and composited at save time
-- Milestones 5–7 — pending: fonts & dialogs polish, drag-and-drop + error states, packaging
+- Milestone 5 (fonts & dialogs) — done: font picker with search filter, alphabetical grouping, and options previewed in their own typeface; font weight selector (100–900); family names sanitized (Linux `font-list` quotes) and quoted safely for canvas + CSS; save dialog enforces the source extension (native filter + `lockExtension` post-validate per `src/main/paths.ts`) with `-watermarked` default rename
+- Milestones 6–7 — pending: drag-and-drop + error states, packaging
 
 ## Out of scope (v1)
 

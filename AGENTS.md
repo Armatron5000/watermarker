@@ -2,7 +2,7 @@
 
 ## State of the repo
 
-Milestones 1 (spike), 2 (scaffold), 3 (core pipeline), and 4 (interactive editor) are complete. `PLAN.md` remains the binding contract; read it before building anything.
+Milestones 1 (spike), 2 (scaffold), 3 (core pipeline), 4 (interactive editor), and 5 (fonts & dialogs) are complete. `PLAN.md` remains the binding contract; read it before building anything.
 
 - Electron 44 + TypeScript + Vite (`electron-vite`), secure 3-tier split: `src/main` (dialogs, font-list, all sharp work) ↔ `src/preload` (typed bridge) ↔ `src/renderer` (UI). `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`. Targets Windows, macOS, Linux.
 - The typed IPC contract lives in `src/shared/ipc.ts` (`IpcChannelMap` maps each whitelisted channel to `request`/`response`; `IpcBridge` is the renderer-facing surface). Exactly the five channels from PLAN §3.5: `list-fonts`, `open-image`, `save-image`, `get-frame-count`, `render-text-layer`. **All five are implemented** in `src/main/ipc.ts`:
@@ -10,9 +10,10 @@ Milestones 1 (spike), 2 (scaffold), 3 (core pipeline), and 4 (interactive editor
   - `open-image` — native open dialog (5-format filter) → sharp decode → PNG preview data URL (≤1200px, EXIF `.rotate()`) + { path, name, format, width, height, frameCount }.
   - `get-frame-count` — returns `metadata().pages ?? 1`.
   - `render-text-layer` — composites a raw RGBA text-layer buffer over the source at (x, y) and returns a PNG preview data URL (the "live preview" path).
-  - `save-image` — native save dialog with extension locked to source format → sharp composite → encode in the **source** format (JPEG 90%) → write to disk.
+  - `save-image` — native save dialog with extension locked to source format → sharp composite → encode in the **source** format (JPEG 90%) → write to disk. Extension-lock helpers (`extensionFor`, `withDefaultExtension`, `lockExtension`, `outputFormat`) live in `src/main/paths.ts` (pure, unit-verifiable).
   - The composite pipeline is shared: `compositeTextLayer(sourcePath, textLayer, x, y)` in `src/main/ipc.ts`.
 - Milestone 4 is done: the interactive editor lives in `src/renderer/src/editor.ts` (an `Editor` class) with a display-scaled DOM overlay (`src/renderer/src/assets/overlay.css`). It provides move (drag), rotate (rotate handle + Shift snaps to 15°), resize (4 corner handles scale font size + wrap width), click-to-edit multi-row text (`white-space: pre-wrap`, Enter + word-wrap), and live previews; `main.ts` wires it to the UI and IPC. Validation is non-blank, ≤100 Unicode code points, whitespace-only rejection (enforced on blur and save). The full-res text layer is drawn on an offscreen canvas (`renderFullResTextLayer()`) at source dimensions and passed to `save-image` at `x:0, y:0`.
+- Milestone 5 is done: the font picker (in `index.html` + `main.ts`) is a searchable `<select>` with alphabetically sorted, first-letter optgroups; each option renders in its own typeface (`option.style.fontFamily`). A weight `<select>` (100–900, default 700) drives `Editor.fontWeight` end to end. `editor.ts` exposes `cssFontFamily()` (quotes multi-word names for canvas/CSS) and `cleanFontName()` (strips the `"…"` wrapping that `font-list` v2 returns on Linux/fontconfig, 150/170 families on the dev OS). The save dialog starts at `<basename>-watermarked.<ext>` and the source extension is re-enforced after the dialog via `lockExtension`.
 - Editor coordinate model: overlay positions are **display px**; `scale = min(areaW/imgW, 500/imgH, 1)`; the full-res render divides by `scale` (`source = display / scale`). CSS `transform-origin: top left` on the text box matches the canvas rotate pivot (block top-left). Text is left-aligned in both DOM and canvas.
 - Editor DOM gotchas already hit: never rebuild a contenteditable text box via `innerHTML = ''` without re-appending the rotate/resize handle elements (they are DOM children and get destroyed); and `onTextBlur` must store the (possibly invalid) `v.text` so `handleSave` reports the real error (blank vs >100 chars) instead of always "blank".
 - Commands: `npm run dev` (HMR dev), `npm run build` (typecheck + electron-vite build into `out/`), `npm run start` (preview the built app), `npm run typecheck`, `npm run spike`.
@@ -54,4 +55,6 @@ Milestone 4 (interactive editor) verified (`npm run typecheck`, `npm run build`,
 - `.toBuffer({ resolveWithObject: true })` resolves to `{ data, info }`; read `info.format/info.width/...`, not `data.format`.
 - Single-frame output reports `info.pages === undefined` (not 1); normalize `pages ?? 1`. `metadata()`/`info` do not report `pageHeight` here.
 - `font-list` v2 exports a named `getFonts`, not a default-callable.
+- On Linux/fontconfig, `font-list` v2 wraps ~most family names in literal double quotes (e.g. `"Adwaita Mono"`, 150/170 on the dev OS). Strip them before using names as option values/labels, and quote names yourself when building `ctx.font` / `style.font` strings (see `cleanFontName` + `cssFontFamily` in `src/renderer/src/editor.ts`).
+- Electron's native save dialog has **no** `customPathValidator` (confirmed against the v44 docs + types); enforce the extension lock with the filter plus a post-dialog append in `lockExtension`.
 - Lossy encoders (JPEG/WebP) smear DCT blocks across the watermark edge — pixels within ~1 block of the watermark may shift slightly; unavoidable, don't treat as a regression.

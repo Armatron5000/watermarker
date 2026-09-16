@@ -1,4 +1,5 @@
 import type { OpenImageResult } from '../../shared/ipc'
+import { cleanFontName, cssFontFamily } from './editor'
 import { Editor } from './editor'
 
 const api = window.api
@@ -6,6 +7,8 @@ const statusEl = document.querySelector<HTMLSpanElement>('#bridge-status')
 const btnOpen = document.querySelector<HTMLButtonElement>('#btn-open')!
 const btnSave = document.querySelector<HTMLButtonElement>('#btn-save')!
 const fontSelect = document.querySelector<HTMLSelectElement>('#font-select')!
+const fontSearch = document.querySelector<HTMLInputElement>('#font-search')!
+const fontWeightSelect = document.querySelector<HTMLSelectElement>('#font-weight')!
 const fontSizeInput = document.querySelector<HTMLInputElement>('#font-size')!
 const opacitySlider = document.querySelector<HTMLInputElement>('#opacity-slider')!
 const msgEl = document.querySelector<HTMLParagraphElement>('#status-msg')!
@@ -21,6 +24,7 @@ const emptyHint = document.querySelector<HTMLParagraphElement>('#empty-hint')!
 const editor = new Editor(previewArea)
 
 let currentImage: OpenImageResult | null = null
+let allFonts: string[] = []
 
 function setStatus(text: string, className: string): void {
   if (!statusEl) return
@@ -34,6 +38,43 @@ function setMsg(text: string): void {
 
 function clearMsg(): void {
   msgEl.textContent = ''
+}
+
+function populateFontSelect(fonts: string[]): void {
+  const prev = fontSelect.value
+  fontSelect.innerHTML = ''
+  const groups = new Map<string, HTMLOptGroupElement>()
+  for (const font of fonts) {
+    const letter = (font[0]?.toUpperCase() ?? '#')
+    let group = groups.get(letter)
+    if (!group) {
+      group = document.createElement('optgroup')
+      group.label = letter
+      groups.set(letter, group)
+      fontSelect.appendChild(group)
+    }
+    const option = document.createElement('option')
+    option.value = font
+    option.textContent = font
+    option.style.fontFamily = `${cssFontFamily(font)}, sans-serif`
+    group.appendChild(option)
+  }
+  if (prev && fontSelect.querySelector(`option[value="${CSS.escape(prev)}"]`)) {
+    fontSelect.value = prev
+  } else {
+    const first = fontSelect.querySelector('option')
+    if (first) fontSelect.value = first.value
+  }
+  fontSelect.disabled = fonts.length === 0
+}
+
+function filterFonts(query: string): void {
+  const q = query.trim().toLowerCase()
+  if (!q) {
+    populateFontSelect(allFonts)
+    return
+  }
+  populateFontSelect(allFonts.filter((f) => f.toLowerCase().includes(q)))
 }
 
 async function loadImage(result: OpenImageResult): Promise<void> {
@@ -113,6 +154,12 @@ async function boot(): Promise<void> {
   fontSelect.addEventListener('change', () => {
     editor.changeFont(fontSelect.value)
   })
+  fontSearch.addEventListener('input', () => {
+    filterFonts(fontSearch.value)
+  })
+  fontWeightSelect.addEventListener('change', () => {
+    editor.changeFontWeight(fontWeightSelect.value)
+  })
   fontSizeInput.addEventListener('input', () => {
     editor.changeFontSize(Number(fontSizeInput.value))
   })
@@ -122,13 +169,10 @@ async function boot(): Promise<void> {
 
   try {
     const fonts = await api.listFonts()
-    for (const font of fonts) {
-      const option = document.createElement('option')
-      option.value = font
-      option.textContent = font
-      fontSelect.appendChild(option)
-    }
-    fontSelect.disabled = false
+    allFonts = [...fonts].map(cleanFontName).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+    populateFontSelect(allFonts)
+    fontSearch.disabled = false
+    fontWeightSelect.disabled = false
   } catch (err) {
     setMsg(`Font enumeration failed: ${String(err)}`)
   }

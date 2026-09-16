@@ -32,9 +32,26 @@
           <div id="preview-area" class="preview-area empty">
             <p id="empty-hint" class="empty-hint">Open an image to begin.</p>
           </div>
-          <div class="controls-row">
-            <label for="font-select">Font</label>
-            <select id="font-select" disabled></select>
+          <div class="controls-grid font-controls">
+            <div class="controls-row font-picker-col">
+              <label for="font-search">Font</label>
+              <input id="font-search" type="search" placeholder="Search fonts…" disabled />
+              <select id="font-select" disabled></select>
+            </div>
+            <div class="controls-row">
+              <label for="font-weight">Weight</label>
+              <select id="font-weight" disabled>
+                <option value="100">Thin</option>
+                <option value="200">Extra Light</option>
+                <option value="300">Light</option>
+                <option value="400">Regular</option>
+                <option value="500">Medium</option>
+                <option value="600">Semi Bold</option>
+                <option value="700" selected>Bold</option>
+                <option value="800">Extra Bold</option>
+                <option value="900">Black</option>
+              </select>
+            </div>
           </div>
           <div class="controls-row">
             <label for="font-size">Size</label>

@@ -103,6 +103,21 @@ button:disabled {
   margin-top: 8px;
 }
 
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 12px;
+  align-items: start;
+}
+
+.controls-grid .controls-row:first-child {
+  margin-top: 8px;
+}
+
+.font-picker-col input[type='search'] {
+  margin-bottom: 6px;
+}
+
 label {
   display: block;
   font-size: 13px;
@@ -111,13 +126,30 @@ label {
 }
 
 select,
-input[type='range'] {
+input[type='range'],
+input[type='search'] {
   width: 100%;
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #3a3b42;
   background: #1e1f24;
   color: inherit;
+}
+
+input[type='search'] {
+  height: 34px;
+}
+
+input[type='search']::placeholder {
+  color: #6a6a72;
+}
+
+select option {
+  font-family: inherit;
+}
+
+select optgroup option {
+  padding: 2px 4px;
 }
 
 input[type='range'] {

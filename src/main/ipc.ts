@@ -4,6 +4,7 @@ import { basename } from 'node:path'
 import sharp from 'sharp'
 import { getFonts } from 'font-list'
 import type { ImageFormat, IpcChannelMap } from '../shared/ipc'
+import { extensionFor, lockExtension, withDefaultExtension } from './paths'
 
 function registerChannel<K extends keyof IpcChannelMap>(
   channel: K,
@@ -109,13 +110,16 @@ export function registerIpcHandlers(): void {
 
   registerChannel('save-image', async (req) => {
     const meta = await getImageMeta(req.sourcePath)
-    const ext = meta.format === 'jpeg' ? 'jpg' : meta.format
+    const ext = extensionFor(meta.format)
 
     const { filePath } = await dialog.showSaveDialog({
-      defaultPath: req.defaultName,
+      defaultPath: withDefaultExtension(req.defaultName, ext),
+      properties: ['showOverwriteConfirmation'],
       filters: [{ name: 'Image', extensions: [ext] }],
     })
     if (!filePath) return null
+
+    const finalPath = lockExtension(filePath, meta.format)
 
     const composite = await compositeTextLayer(req.sourcePath, req.textLayer, req.x, req.y)
 
@@ -128,8 +132,8 @@ export function registerIpcHandlers(): void {
     }
 
     const output = await formatHandlers[meta.format]().toBuffer()
-    await writeFile(filePath, output)
+    await writeFile(finalPath, output)
 
-    return { savedPath: filePath }
+    return { savedPath: finalPath }
   })
 }
