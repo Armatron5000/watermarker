@@ -29,12 +29,21 @@
           <div id="image-info" class="info" hidden>
             <span id="info-name"></span> — <span id="info-dims"></span>, <span id="info-format"></span>
           </div>
-          <div id="preview-area" class="preview-area">
-            <canvas id="preview-canvas"></canvas>
+          <div id="preview-area" class="preview-area empty">
             <p id="empty-hint" class="empty-hint">Open an image to begin.</p>
           </div>
-          <label for="font-select">Font</label>
-          <select id="font-select" disabled></select>
+          <div class="controls-row">
+            <label for="font-select">Font</label>
+            <select id="font-select" disabled></select>
+          </div>
+          <div class="controls-row">
+            <label for="font-size">Size</label>
+            <input id="font-size" type="range" min="12" max="120" value="32" />
+          </div>
+          <div class="controls-row">
+            <label for="opacity-slider">Opacity</label>
+            <input id="opacity-slider" type="range" min="10" max="100" value="50" />
+          </div>
           <p id="status-msg" class="note"></p>
         </div>
       </main>

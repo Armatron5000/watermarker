@@ -1,0 +1,117 @@
+.preview-area {
+  position: relative;
+}
+
+.preview-area.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-stage {
+  position: relative;
+  display: inline-block;
+}
+
+.preview-img {
+  display: block;
+  pointer-events: none;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.editor-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.editor-text-box {
+  position: absolute;
+  min-width: 60px;
+  min-height: 30px;
+  border: none;
+  outline: 1.5px dashed rgba(255, 100, 100, 0.85);
+  outline-offset: 2px;
+  background: rgba(255, 0, 0, 0.04);
+  color: white;
+  cursor: grab;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: visible;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  font-weight: bold;
+  line-height: 1.2;
+  transform-origin: top left;
+}
+
+.editor-text-box:focus {
+  outline-color: rgba(255, 100, 100, 1);
+  background: rgba(255, 0, 0, 0.08);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.editor-text-box:active {
+  cursor: grabbing;
+}
+
+.editor-rotate-handle {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f55;
+  border: 2px solid #fff;
+  cursor: grab;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.editor-rotate-handle:active {
+  cursor: grabbing;
+}
+
+.editor-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 1.5px solid #f55;
+  border-radius: 2px;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.editor-resize-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.editor-resize-ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.editor-resize-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.editor-resize-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}

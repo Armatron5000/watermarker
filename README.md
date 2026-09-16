@@ -10,6 +10,7 @@ Built with **Electron + TypeScript + Vite** (`electron-vite`), targeting Windows
 - **Output type is locked:** the saved file always keeps the source format; the user cannot change it.
 - **Animated GIF / multi-frame TIFF:** a warning is shown and the watermark is flattened into the first frame (result is single-frame).
 - **Watermark:** any locally installed OS font (enumerated via `font-list`); up to 100 Unicode characters; multi-row via line breaks and/or word-wrap.
+- **Interactive editor:** drag to move, corner handles to resize (font size + wrap width), handle to rotate (Shift snaps to 15°), click to edit text in place.
 - **Preview matches output:** text is drawn in the renderer (Chromium/Skia), and EXIF orientation is honored via sharp `.rotate()`.
 
 ## Architecture
@@ -76,7 +77,8 @@ electron.vite.config.mts  Build configuration
 - Milestone 1 (spike) — done
 - Milestone 2 (scaffold) — done: secure split, typed IPC bridge, `list-fonts` live end-to-end
 - Milestone 3 (core pipeline) — done: `open-image`, `get-frame-count`, `render-text-layer`, `save-image` IPC handlers implemented with sharp; native open/save dialogs; full-res composite encodes in the source format (JPEG 90%); multi-frame warning flow; preview rendered in the app
-- Milestones 4–7 — pending: editor (move/resize/rotate/multi-row text layer), fonts & dialogs polish, drag-and-drop + error states, packaging
+- Milestone 4 (interactive editor) — done: move (drag), rotate (Shift snaps to 15°), resize (4 corner handles scale font + wrap width), click-to-edit multi-row text, live preview; validation (non-blank, ≤100 Unicode code points, whitespace-only rejection); full-res text layer rendered on an offscreen canvas and composited at save time
+- Milestones 5–7 — pending: fonts & dialogs polish, drag-and-drop + error states, packaging
 
 ## Out of scope (v1)
 
