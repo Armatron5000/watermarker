@@ -1,0 +1,59 @@
+appId: com.watermarker.app
+productName: Watermarker
+copyright: Copyright © 2026 Watermarker
+
+# Build each platform on its own OS (see .github/workflows/release.yml).
+# sharp ships per-platform prebuilt binaries (@img/sharp-<os>-<arch>) that npm
+# only installs for the host OS, so cross-packaging produces an app whose
+# native image code cannot load.
+directories:
+  buildResources: build
+  output: release
+files:
+  - out/**
+  - package.json
+asar: true
+
+# sharp vendors native prebuilt binaries under node_modules/@img/* that are
+# dlopen'd at runtime; they must be unpacked from the asar. The JS part of
+# sharp plus font-list (pure JS / child-process) stay inside the asar.
+asarUnpack:
+  - "node_modules/sharp/**"
+  - "node_modules/@img/**"
+
+mac:
+  category: public.app-category.graphics-design
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+  # Signing auto-discovers an identity from the keychain. To force an
+  # unsigned mac build set CSC_IDENTITY_AUTO_DISCOVERY=false (which also
+  # skips notarization). Notarization reads APPLE_ID,
+  # APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID from the environment.
+  notarize: true
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: Watermarker
+
+linux:
+  target:
+    - target: AppImage
+    - target: deb
+  maintainer: Watermarker
+  category: Graphics
+  # Derive the installed .desktop filename from `desktopName` in package.json
+  # so it matches Electron's app_id / StartupWMClass (window association).
+  syncDesktopName: true
