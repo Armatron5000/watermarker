@@ -11,7 +11,8 @@ Built with **Electron + TypeScript + Vite** (`electron-vite`), targeting Windows
 - **Animated GIF / multi-frame TIFF:** a warning is shown and the watermark is flattened into the first frame (result is single-frame).
 - **Watermark:** any locally installed OS font (enumerated via `font-list`); up to 100 Unicode characters; multi-row via line breaks and/or word-wrap.
 - **Interactive editor:** drag to move, corner handles to resize (font size + wrap width), handle to rotate (Shift snaps to 15°), click to edit text in place.
-- **Preview matches output:** text is drawn in the renderer (Chromium/Skia), and EXIF orientation is honored via sharp `.rotate()`.
+- **Open by drag-and-drop:** drop an image anywhere in the window to open it; the empty-state shows a dedicated Open button and drop hint.
+- **Preview matches output:** text is drawn in the renderer (Chromium/Skia), and EXIF orientation is honored via sharp `.rotate()` (oriented dimensions are reported to the editor so the full-res text layer lines up).
 
 ## Architecture
 
@@ -26,7 +27,7 @@ live preview, text layer       contextBridge / ipcRenderer    dialogs, font-list
                                nodeIntegration: false
 ```
 
-- The typed IPC contract lives in `src/shared/ipc.ts` and exposes exactly five whitelisted channels: `list-fonts`, `open-image`, `save-image`, `get-frame-count`, `render-text-layer`.
+- The typed IPC contract lives in `src/shared/ipc.ts` and exposes exactly five whitelisted channels: `list-fonts`, `open-image`, `save-image`, `get-frame-count`, `render-text-layer`. Drag-and-drop reuses `open-image` with an optional `{ path }` (the dropped file's path is resolved in the sandboxed preload via `webUtils.getPathForFile`, a non-IPC bridge helper); `open-image` rejects unsupported formats and reports EXIF-oriented dimensions.
 - At save time the renderer draws the watermark onto an offscreen canvas, exports a transparent PNG, and the main process composites it with sharp and encodes to the source format.
 
 ## Prerequisites
@@ -79,7 +80,8 @@ electron.vite.config.mts  Build configuration
 - Milestone 3 (core pipeline) — done: `open-image`, `get-frame-count`, `render-text-layer`, `save-image` IPC handlers implemented with sharp; native open/save dialogs; full-res composite encodes in the source format (JPEG 90%); multi-frame warning flow; preview rendered in the app
 - Milestone 4 (interactive editor) — done: move (drag), rotate (Shift snaps to 15°), resize (4 corner handles scale font + wrap width), click-to-edit multi-row text, live preview; validation (non-blank, ≤100 Unicode code points, whitespace-only rejection); full-res text layer rendered on an offscreen canvas and composited at save time
 - Milestone 5 (fonts & dialogs) — done: font picker with search filter, alphabetical grouping, and options previewed in their own typeface; font weight selector (100–900); family names sanitized (Linux `font-list` quotes) and quoted safely for canvas + CSS; save dialog enforces the source extension (native filter + `lockExtension` post-validate per `src/main/paths.ts`) with `-watermarked` default rename
-- Milestones 6–7 — pending: drag-and-drop + error states, packaging
+- Milestone 6 (polish) — done: drag-and-drop open (`webUtils.getPathForFile` + `open-image` with an optional path), empty-state UX with an in-panel Open button, error states (unsupported format / decode failures surfaced in styled messages, editor controls disabled until an image is open, drop-over highlight), and EXIF handling (oriented dimensions reported so preview/output and the full-res text layer align; unsupported-formats rejected at open time)
+- Milestone 7 (packaging) — pending: electron-builder for Windows, macOS (signing/notarization), Linux
 
 ## Out of scope (v1)
 

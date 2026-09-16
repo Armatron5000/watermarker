@@ -30,37 +30,43 @@
             <span id="info-name"></span> — <span id="info-dims"></span>, <span id="info-format"></span>
           </div>
           <div id="preview-area" class="preview-area empty">
-            <p id="empty-hint" class="empty-hint">Open an image to begin.</p>
+            <div id="empty-hint" class="empty-hint">
+              <p class="empty-title">No image open</p>
+              <p class="empty-sub">Open an image from disk, or drag and drop one anywhere in the window.</p>
+              <button id="btn-open-empty" type="button">Open Image…</button>
+            </div>
           </div>
-          <div class="controls-grid font-controls">
-            <div class="controls-row font-picker-col">
-              <label for="font-search">Font</label>
-              <input id="font-search" type="search" placeholder="Search fonts…" disabled />
-              <select id="font-select" disabled></select>
+          <fieldset id="editor-controls" disabled>
+            <div class="controls-grid font-controls">
+              <div class="controls-row font-picker-col">
+                <label for="font-search">Font</label>
+                <input id="font-search" type="search" placeholder="Search fonts…" disabled />
+                <select id="font-select" disabled></select>
+              </div>
+              <div class="controls-row">
+                <label for="font-weight">Weight</label>
+                <select id="font-weight" disabled>
+                  <option value="100">Thin</option>
+                  <option value="200">Extra Light</option>
+                  <option value="300">Light</option>
+                  <option value="400">Regular</option>
+                  <option value="500">Medium</option>
+                  <option value="600">Semi Bold</option>
+                  <option value="700" selected>Bold</option>
+                  <option value="800">Extra Bold</option>
+                  <option value="900">Black</option>
+                </select>
+              </div>
             </div>
             <div class="controls-row">
-              <label for="font-weight">Weight</label>
-              <select id="font-weight" disabled>
-                <option value="100">Thin</option>
-                <option value="200">Extra Light</option>
-                <option value="300">Light</option>
-                <option value="400">Regular</option>
-                <option value="500">Medium</option>
-                <option value="600">Semi Bold</option>
-                <option value="700" selected>Bold</option>
-                <option value="800">Extra Bold</option>
-                <option value="900">Black</option>
-              </select>
+              <label for="font-size">Size</label>
+              <input id="font-size" type="range" min="12" max="120" value="32" />
             </div>
-          </div>
-          <div class="controls-row">
-            <label for="font-size">Size</label>
-            <input id="font-size" type="range" min="12" max="120" value="32" />
-          </div>
-          <div class="controls-row">
-            <label for="opacity-slider">Opacity</label>
-            <input id="opacity-slider" type="range" min="10" max="100" value="50" />
-          </div>
+            <div class="controls-row">
+              <label for="opacity-slider">Opacity</label>
+              <input id="opacity-slider" type="range" min="10" max="100" value="50" />
+            </div>
+          </fieldset>
           <p id="status-msg" class="note"></p>
         </div>
       </main>

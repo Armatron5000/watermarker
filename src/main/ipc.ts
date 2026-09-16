@@ -1,10 +1,11 @@
 import { dialog, ipcMain } from 'electron'
 import { readFile, writeFile } from 'node:fs/promises'
 import { basename } from 'node:path'
-import sharp from 'sharp'
+import sharp, { type Metadata } from 'sharp'
 import { getFonts } from 'font-list'
 import type { ImageFormat, IpcChannelMap } from '../shared/ipc'
-import { extensionFor, lockExtension, withDefaultExtension } from './paths'
+import { SUPPORTED_FORMATS, UNSUPPORTED_FORMAT_MESSAGE, isSupportedImagePath } from '../shared/ipc'
+import { extensionFor, lockExtension, outputFormat, withDefaultExtension } from './paths'
 
 function registerChannel<K extends keyof IpcChannelMap>(
   channel: K,
@@ -31,13 +32,29 @@ function makePreview(srcPath: string): Promise<string> {
     .then((buf) => `data:image/png;base64,${buf.toString('base64')}`)
 }
 
+function orientedDimensions(meta: Metadata) {
+  const autoOrient = meta.autoOrient
+  if (autoOrient?.width && autoOrient?.height) {
+    return { width: autoOrient.width, height: autoOrient.height }
+  }
+  const orientation = meta.orientation ?? 1
+  if (orientation >= 5 && orientation <= 8) {
+    return { width: meta.height, height: meta.width }
+  }
+  return { width: meta.width, height: meta.height }
+}
+
 async function getImageMeta(srcPath: string) {
   const meta = await sharp(srcPath).metadata()
-  const format = (meta.format ?? 'png') as ImageFormat
+  const format = outputFormat(meta.format ?? 'png')
+  if (!SUPPORTED_FORMATS.includes(format)) {
+    throw new Error(UNSUPPORTED_FORMAT_MESSAGE)
+  }
+  const { width, height } = orientedDimensions(meta)
   return {
     format,
-    width: meta.width ?? 0,
-    height: meta.height ?? 0,
+    width,
+    height,
     pages: meta.pages ?? 1,
   }
 }
@@ -67,17 +84,23 @@ async function compositeTextLayer(
 export function registerIpcHandlers(): void {
   registerChannel('list-fonts', async () => getFonts())
 
-  registerChannel('open-image', async () => {
-    const result = await dialog.showOpenDialog({
-      properties: ['openFile'],
-      filters: IMAGE_FILTERS,
-    })
-    if (result.canceled || result.filePaths.length === 0) return null
+  registerChannel('open-image', async (req) => {
+    let filePath: string | undefined = req?.path
+    if (!filePath) {
+      const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: IMAGE_FILTERS,
+      })
+      if (result.canceled || result.filePaths.length === 0) return null
+      filePath = result.filePaths[0]
+    }
 
-    const filePath = result.filePaths[0]
+    if (!isSupportedImagePath(filePath)) {
+      throw new Error(UNSUPPORTED_FORMAT_MESSAGE)
+    }
+
     const meta = await getImageMeta(filePath)
     const previewDataUrl = await makePreview(filePath)
-    const frameCount = meta.pages
 
     return {
       path: filePath,
@@ -85,7 +108,7 @@ export function registerIpcHandlers(): void {
       format: meta.format,
       width: meta.width,
       height: meta.height,
-      frameCount,
+      frameCount: meta.pages,
       previewDataUrl,
     }
   })

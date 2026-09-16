@@ -1,4 +1,5 @@
 import type { OpenImageResult } from '../../shared/ipc'
+import { UNSUPPORTED_FORMAT_MESSAGE, isSupportedImagePath } from '../../shared/ipc'
 import { cleanFontName, cssFontFamily } from './editor'
 import { Editor } from './editor'
 
@@ -6,6 +7,7 @@ const api = window.api
 const statusEl = document.querySelector<HTMLSpanElement>('#bridge-status')
 const btnOpen = document.querySelector<HTMLButtonElement>('#btn-open')!
 const btnSave = document.querySelector<HTMLButtonElement>('#btn-save')!
+const btnOpenEmpty = document.querySelector<HTMLButtonElement>('#btn-open-empty')!
 const fontSelect = document.querySelector<HTMLSelectElement>('#font-select')!
 const fontSearch = document.querySelector<HTMLInputElement>('#font-search')!
 const fontWeightSelect = document.querySelector<HTMLSelectElement>('#font-weight')!
@@ -19,7 +21,8 @@ const infoName = document.querySelector<HTMLSpanElement>('#info-name')!
 const infoDims = document.querySelector<HTMLSpanElement>('#info-dims')!
 const infoFormat = document.querySelector<HTMLSpanElement>('#info-format')!
 const previewArea = document.querySelector<HTMLDivElement>('#preview-area')!
-const emptyHint = document.querySelector<HTMLParagraphElement>('#empty-hint')!
+const emptyHint = document.querySelector<HTMLDivElement>('#empty-hint')!
+const editorControls = document.querySelector<HTMLFieldSetElement>('#editor-controls')!
 
 const editor = new Editor(previewArea)
 
@@ -32,12 +35,21 @@ function setStatus(text: string, className: string): void {
   statusEl.className = `status ${className}`
 }
 
-function setMsg(text: string): void {
+function setMsg(text: string, kind: 'ok' | 'error' | '' = ''): void {
   msgEl.textContent = text
+  msgEl.className = `note${kind === 'ok' ? ' msg-ok' : kind === 'error' ? ' msg-error' : ''}`
 }
 
 function clearMsg(): void {
   msgEl.textContent = ''
+}
+
+const IPC_ERROR_PREFIX = /^Error invoking remote method '[^']+': (?:Error: )?(.*)$/s
+
+function asMessage(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err)
+  const match = IPC_ERROR_PREFIX.exec(raw)
+  return match && match[1] ? match[1] : raw
 }
 
 function populateFontSelect(fonts: string[]): void {
@@ -82,6 +94,8 @@ async function loadImage(result: OpenImageResult): Promise<void> {
   await editor.loadImage(result)
 
   emptyHint.hidden = true
+  btnOpenEmpty.hidden = true
+  editorControls.disabled = false
 
   infoName.textContent = result.name
   infoDims.textContent = `${result.width} × ${result.height}`
@@ -102,8 +116,58 @@ async function handleOpen(): Promise<void> {
     await loadImage(result)
     clearMsg()
   } catch (err) {
-    setMsg(`Open failed: ${String(err)}`)
+    setMsg(`Open failed: ${asMessage(err)}`, 'error')
   }
+}
+
+async function handleDroppedFile(file: File): Promise<void> {
+  try {
+    const filePath = api.getPathForFile(file)
+    if (!filePath) {
+      setMsg('Could not resolve the dropped file path.', 'error')
+      return
+    }
+    if (!isSupportedImagePath(filePath)) {
+      setMsg(UNSUPPORTED_FORMAT_MESSAGE, 'error')
+      return
+    }
+    const result = await api.openImage({ path: filePath })
+    if (!result) return
+    await loadImage(result)
+    clearMsg()
+  } catch (err) {
+    setMsg(`Open failed: ${asMessage(err)}`, 'error')
+  }
+}
+
+function attachDropTarget(): void {
+  let dragDepth = 0
+  const hasFiles = (e: DragEvent): boolean =>
+    Array.from(e.dataTransfer?.types ?? []).includes('Files')
+
+  document.body.addEventListener('dragenter', (e) => {
+    if (!hasFiles(e)) return
+    e.preventDefault()
+    dragDepth++
+    document.body.classList.add('drop-active')
+  })
+  document.body.addEventListener('dragover', (e) => {
+    if (!hasFiles(e)) return
+    e.preventDefault()
+  })
+  document.body.addEventListener('dragleave', (e) => {
+    if (!hasFiles(e)) return
+    dragDepth = Math.max(0, dragDepth - 1)
+    if (dragDepth === 0) document.body.classList.remove('drop-active')
+  })
+  document.body.addEventListener('drop', (e) => {
+    if (!hasFiles(e)) return
+    e.preventDefault()
+    dragDepth = 0
+    document.body.classList.remove('drop-active')
+    const file = e.dataTransfer?.files?.[0]
+    if (file) void handleDroppedFile(file)
+  })
 }
 
 async function handleSave(): Promise<void> {
@@ -111,13 +175,13 @@ async function handleSave(): Promise<void> {
 
   const v = editor.validateText(editor.text)
   if (!v.valid) {
-    setMsg(v.error ?? 'Watermark text is required.')
+    setMsg(v.error ?? 'Watermark text is required.', 'error')
     return
   }
 
   const textLayer = editor.renderFullResTextLayer()
   if (!textLayer) {
-    setMsg('No text layer to save.')
+    setMsg('No text layer to save.', 'error')
     return
   }
 
@@ -131,10 +195,10 @@ async function handleSave(): Promise<void> {
       y: 0,
     })
     if (result) {
-      setMsg(`Saved to ${result.savedPath}`)
+      setMsg(`Saved to ${result.savedPath}`, 'ok')
     }
   } catch (err) {
-    setMsg(`Save failed: ${String(err)}`)
+    setMsg(`Save failed: ${asMessage(err)}`, 'error')
   }
 }
 
@@ -149,7 +213,9 @@ async function boot(): Promise<void> {
 
   btnOpen.disabled = false
   btnOpen.addEventListener('click', handleOpen)
+  btnOpenEmpty.addEventListener('click', handleOpen)
   btnSave.addEventListener('click', handleSave)
+  attachDropTarget()
 
   fontSelect.addEventListener('change', () => {
     editor.changeFont(fontSelect.value)
@@ -174,7 +240,7 @@ async function boot(): Promise<void> {
     fontSearch.disabled = false
     fontWeightSelect.disabled = false
   } catch (err) {
-    setMsg(`Font enumeration failed: ${String(err)}`)
+    setMsg(`Font enumeration failed: ${asMessage(err)}`, 'error')
   }
 }
 
