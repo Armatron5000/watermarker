@@ -93,7 +93,7 @@ try {
 }
 
 // ---------------------------------------------------------------------------
-console.log("\n## 1. Format round-trips preserving type + composite pipeline (PLAN §3.2)\n");
+console.log("\n## 1. Format round-trips preserving type + composite pipeline (specs/00-INIT-PLAN §3.2)\n");
 const sourceRaw = gradientRaw(SOURCE_W, SOURCE_H);
 const sourceRawo = { raw: { width: SOURCE_W, height: SOURCE_H, channels: 4 } };
 
@@ -165,7 +165,7 @@ const byContent = await sharp(joinPath(OUT, "mismatched-extension.png")).metadat
 check("file type determined by content, not extension", byContent.format === "webp", `named .png but read as ${byContent.format}`);
 
 // ---------------------------------------------------------------------------
-console.log("\n## 2. Animated GIF + multi-frame TIFF: first-frame flatten (PLAN §1.2)\n");
+console.log("\n## 2. Animated GIF + multi-frame TIFF: first-frame flatten (specs/00-INIT-PLAN §1.2)\n");
 const frames = [flatRaw([255, 0, 0]), flatRaw([0, 255, 0]), flatRaw([0, 0, 255])];
 const framePngs = await Promise.all(
   frames.map((b) => sharp(b, { raw: { width: 320, height: 240, channels: 4 } }).png().toBuffer())
@@ -200,13 +200,13 @@ for (const [name, buf] of [["GIF", gifBuf], ["TIFF", tifBuf]]) {
 }
 
 check(
-  "GIF frame-count detectability for warning flow (PLAN §1.2)",
+  "GIF frame-count detectability for warning flow (specs/00-INIT-PLAN §1.2)",
   gifMeta.pages === 3,
   `metadata().pages=${gifMeta.pages} usable for "N frames" warning`
 );
 
 // ---------------------------------------------------------------------------
-console.log("\n## 3. EXIF orientation: preview (auto-orient) vs output (.rotate()) (PLAN §3.4)\n");
+console.log("\n## 3. EXIF orientation: preview (auto-orient) vs output (.rotate()) (specs/00-INIT-PLAN §3.4)\n");
 const exifJpeg = await sharp(sourceRaw, sourceRawo).jpeg().withMetadata({ orientation: 6 }).toBuffer();
 const exifMeta = await sharp(exifJpeg).metadata();
 check(
@@ -234,7 +234,7 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-console.log("\n## 4. font-list enumeration (PLAN §2.3)\n");
+console.log("\n## 4. font-list enumeration (specs/00-INIT-PLAN §2.3)\n");
 let fonts = [];
 try {
   fonts = await getFonts();

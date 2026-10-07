@@ -2,10 +2,10 @@
 
 ## State of the repo
 
-Milestones 1 (spike), 2 (scaffold), 3 (core pipeline), 4 (interactive editor), 5 (fonts & dialogs), 6 (polish), and 7 (packaging) are complete. `PLAN.md` remains the binding contract; read it before building anything.
+Milestones 1 (spike), 2 (scaffold), 3 (core pipeline), 4 (interactive editor), 5 (fonts & dialogs), 6 (polish), and 7 (packaging) are complete. `specs/` is the brain source of the project — every specification and plan lives there, numbered by order of authority; `specs/00-INIT-PLAN.md` remains the binding contract (formerly `PLAN.md` in the repo root); read it before building anything. The v2 polish round (no new features: reliability/dirty-state, canvas limits, a11y + keyboard, ResizeObserver overlay scaling, vitest/eslint/CI gate, docs truthfulness) is planned in `specs/01-V2-PLAN.md`; its milestones are pending — `00-INIT-PLAN.md` stays untouched until the polish round lands.
 
 - Electron 44 + TypeScript + Vite (`electron-vite`), secure 3-tier split: `src/main` (dialogs, font-list, all sharp work) ↔ `src/preload` (typed bridge) ↔ `src/renderer` (UI). `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`. Targets Windows, macOS, Linux.
-- The typed IPC contract lives in `src/shared/ipc.ts` (`IpcChannelMap` maps each whitelisted channel to `request`/`response`; `IpcBridge` is the renderer-facing surface). Exactly the five channels from PLAN §3.5: `list-fonts`, `open-image`, `save-image`, `get-frame-count`, `render-text-layer`. **All five are implemented** in `src/main/ipc.ts`:
+- The typed IPC contract lives in `src/shared/ipc.ts` (`IpcChannelMap` maps each whitelisted channel to `request`/`response`; `IpcBridge` is the renderer-facing surface). Exactly the five channels from specs/00-INIT-PLAN.md §3.5: `list-fonts`, `open-image`, `save-image`, `get-frame-count`, `render-text-layer`. **All five are implemented** in `src/main/ipc.ts`:
   - `list-fonts` — real `font-list` enumeration.
   - `open-image` — native open dialog (5-format filter) **or a dropped-file path** (optional `{ path }` request) → validate extension + format (reject anything not in the 5-format set) → sharp decode → PNG preview data URL (≤1200px, EXIF `.rotate()`) + { path, name, format, width, height: **EXIF-oriented**, frameCount }. `getImageMeta` uses `metadata().autoOrient` (fallback: swap dims for orientation 5–8) so oriented width/height are reported and the full-res text layer aligns with the `.rotate()`d composite.
   - `get-frame-count` — returns `metadata().pages ?? 1`.
@@ -35,13 +35,13 @@ Milestones 1 (spike), 2 (scaffold), 3 (core pipeline), 4 (interactive editor), 5
 ## Architecture notes
 
 - Sanitized, secure 3-tier split: renderer (UI/editor) ↔ preload (typed IPC bridge) ↔ main (dialogs, `font-list`, all sharp work). `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`.
-- No CSS tricks beyond the editor; adopt the renderer text-layer → transparent PNG → sharp `.composite()` pipeline from PLAN.md §3.2.
+- No CSS tricks beyond the editor; adopt the renderer text-layer → transparent PNG → sharp `.composite()` pipeline from specs/00-INIT-PLAN.md §3.2.
 
 ## Verification
 
 Spike done and passing (`npm run spike`, evergreen script at `spike/spike.mjs`). Verified on Linux (sharp 0.35.4, libvips 8.18.6), 40/40 checks:
 
-- All 5 formats (PNG, JPEG, WebP, TIFF, GIF) write via sharp; round-trip preserves output format + dimensions; `composite({ blend: 'over' })` pipeline works per PLAN.md §3.2.
+- All 5 formats (PNG, JPEG, WebP, TIFF, GIF) write via sharp; round-trip preserves output format + dimensions; `composite({ blend: 'over' })` pipeline works per specs/00-INIT-PLAN.md §3.2.
 - Animated GIF (3 frames) and multi-frame TIFF preview/save flow: `metadata().pages > 1` detects multi-frame; reading with `{ page: 0 }` flattens to a single-frame output of the same format.
 - EXIF: `metadata().orientation` reports the tag; `.rotate()` bytes equal `.autoOrient()` (what the browser preview shows); stale orientation tag stripped on save.
 - `font-list` works: 170 families enumerated on the dev OS.

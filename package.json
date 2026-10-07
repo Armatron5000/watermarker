@@ -4,7 +4,7 @@
   "desktopName": "watermarker.desktop",
   "version": "0.0.0",
   "private": true,
-  "description": "Cross-platform image watermarking desktop app (Electron). See PLAN.md.",
+  "description": "Cross-platform image watermarking desktop app (Electron). See specs/00-INIT-PLAN.md.",
   "author": {
     "name": "Watermarker"
   },

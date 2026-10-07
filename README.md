@@ -16,7 +16,7 @@ Built with **Electron + TypeScript + Vite** (`electron-vite`), targeting Windows
 
 ## Architecture
 
-Secure 3-tier split (per `PLAN.md`):
+Secure 3-tier split (per `specs/00-INIT-PLAN.md`):
 
 ```
 Renderer (web UI/editor)  ↔  Preload (typed IPC bridge)  ↔  Main (Node)
@@ -63,7 +63,7 @@ npm run spike
 
 This exercises all 5 formats against sharp (round-trip format/dimension preservation, the composite pipeline, first-frame flattening for animated GIF/multi-frame TIFF, EXIF `.rotate()` handling) and verifies `font-list` enumeration. Last run: 40/40 checks passing.
 
-> Note: the app request builds on `PLAN.md` in the repository root, which is the binding technical specification.
+> Note: the app request builds on `specs/00-INIT-PLAN.md`, the binding technical specification. `specs/` is the brain source of the project: all specifications and plans live there, numbered by order of authority (`00-` first).
 
 ## Packaging
 
@@ -99,7 +99,8 @@ The CI workflow passes these from repository secrets, so adding the secrets is a
 ## Project layout
 
 ```
-plan.md                    Binding technical specification & milestone plan
+specs/00-INIT-PLAN.md      Binding technical specification & milestone plan (specs/ = brain source)
+specs/01-V2-PLAN.md        v2 plan: polish round (reliability, a11y, dev health) — no new features
 src/shared/ipc.ts          IPC channel map, DTO types, renderer-facing bridge type
 src/main/                  Electron main process (window, dialogs, font-list, sharp)
 src/preload/               Sandboxed preload bridge (contextBridge)
